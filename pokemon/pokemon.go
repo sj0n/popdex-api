@@ -13,11 +13,12 @@ import (
 )
 
 type PokemonProfile struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	Weight    int    `json:"weight"`
-	Height    int    `json:"height"`
-	Abilities []struct {
+	CacheControl string `header:"Cache-Control"`
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Weight       int    `json:"weight"`
+	Height       int    `json:"height"`
+	Abilities    []struct {
 		Ability struct {
 			Name string `json:"name"`
 		} `json:"ability"`
@@ -63,6 +64,7 @@ func GetPokemonProfile(ctx context.Context, name string) (*PokemonProfile, error
 	var data PokemonProfile
 	json.NewDecoder(resp.Body).Decode(&data)
 
+	data.CacheControl = "public, max-age=604800, must-revalidate"
 	return &data, nil
 }
 
@@ -92,7 +94,8 @@ type FormattedMoves struct {
 }
 
 type GroupByVersion struct {
-	Versions map[string][]FormattedMoves `json:"versions"`
+	CacheControl string                      `header:"Cache-Control"`
+	Versions     map[string][]FormattedMoves `json:"versions"`
 }
 
 //encore:api public path=/pokemon/:name/moves
@@ -138,7 +141,7 @@ func GetPokemonMoves(ctx context.Context, name string) (*GroupByVersion, error) 
 		}
 	}
 
-	return &GroupByVersion{Versions: groupedByVersion}, nil
+	return &GroupByVersion{Versions: groupedByVersion, CacheControl: "public, max-age=604800, must-revalidate"}, nil
 }
 
 type EncounterDetails struct {
@@ -171,7 +174,8 @@ type FormattedLocations struct {
 }
 
 type PokemonLocations struct {
-	Versions map[string][]FormattedLocations `json:"versions"`
+	CacheControl string                          `header:"Cache-Control"`
+	Versions     map[string][]FormattedLocations `json:"versions"`
 }
 
 //encore:api public path=/pokemon/:name/locations
@@ -261,5 +265,5 @@ func GetPokemonLocations(ctx context.Context, name string) (*PokemonLocations, e
 		}
 	}
 
-	return &PokemonLocations{Versions: result}, nil
+	return &PokemonLocations{Versions: result, CacheControl: "public, max-age=604800, must-revalidate"}, nil
 }
