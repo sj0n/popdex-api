@@ -3,26 +3,15 @@ package pokemon
 import (
 	"context"
 	"encoding/json"
-	"time"
 	"math"
 	"net/http"
 	"strings"
 
 	"encore.app/pokemon/util"
 	"encore.dev/beta/errs"
-	"encore.dev/storage/cache"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
-
-var PokemonCluster = cache.NewCluster("pokemon", cache.ClusterConfig{
-    EvictionPolicy: cache.AllKeysLFU,
-})
-
-var EtagCache = cache.NewStringKeyspace[string](PokemonCluster, cache.KeyspaceConfig{
-    KeyPattern: "pokemon/:key",
-    DefaultExpiry: cache.ExpireIn(604800 * time.Second),
-})
 
 type PokemonProfile struct {
 	CacheControl string `header:"Cache-Control"`
