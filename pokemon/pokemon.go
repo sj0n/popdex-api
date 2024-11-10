@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"encore.app/pokemon/util"
 	"encore.dev/beta/errs"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -14,10 +15,11 @@ import (
 
 type PokemonProfile struct {
 	CacheControl string `header:"Cache-Control"`
-	Id           int    `json:"id"`
+	ETag         string `header:"ETag"`
+	Id           int8   `json:"id"`
 	Name         string `json:"name"`
-	Weight       int    `json:"weight"`
-	Height       int    `json:"height"`
+	Weight       int8   `json:"weight"`
+	Height       int8   `json:"height"`
 	Abilities    []struct {
 		Ability struct {
 			Name string `json:"name"`
@@ -65,11 +67,12 @@ func GetPokemonProfile(ctx context.Context, name string) (*PokemonProfile, error
 	json.NewDecoder(resp.Body).Decode(&data)
 
 	data.CacheControl = "public, max-age=604800, must-revalidate"
+	data.ETag = pokemon.GenerateEtag(data)
 	return &data, nil
 }
 
 type GameVersionDetails struct {
-	LevelLearnedAt  int `json:"level_learned_at"`
+	LevelLearnedAt  int8 `json:"level_learned_at"`
 	MoveLearnMethod struct {
 		Name string `json:"name"`
 	} `json:"move_learn_method"`
@@ -89,12 +92,13 @@ type PokemonMoves struct {
 
 type FormattedMoves struct {
 	Name        string `json:"name"`
-	Level       int    `json:"level"`
+	Level       int8   `json:"level"`
 	LearnMethod string `json:"learn_method"`
 }
 
 type GroupByVersion struct {
 	CacheControl string                      `header:"Cache-Control"`
+	ETag         string                      `header:"ETag"`
 	Versions     map[string][]FormattedMoves `json:"versions"`
 }
 
@@ -141,7 +145,7 @@ func GetPokemonMoves(ctx context.Context, name string) (*GroupByVersion, error) 
 		}
 	}
 
-	return &GroupByVersion{Versions: groupedByVersion, CacheControl: "public, max-age=604800, must-revalidate"}, nil
+	return &GroupByVersion{Versions: groupedByVersion, CacheControl: "public, max-age=604800, must-revalidate", ETag: pokemon.GenerateEtag(groupedByVersion)}, nil
 }
 
 type EncounterDetails struct {
@@ -175,6 +179,7 @@ type FormattedLocations struct {
 
 type PokemonLocations struct {
 	CacheControl string                          `header:"Cache-Control"`
+	ETag         string                          `header:"ETag"`
 	Versions     map[string][]FormattedLocations `json:"versions"`
 }
 
@@ -265,5 +270,5 @@ func GetPokemonLocations(ctx context.Context, name string) (*PokemonLocations, e
 		}
 	}
 
-	return &PokemonLocations{Versions: result, CacheControl: "public, max-age=604800, must-revalidate"}, nil
+	return &PokemonLocations{Versions: result, CacheControl: "public, max-age=604800, must-revalidate", ETag: pokemon.GenerateEtag(result)}, nil
 }
