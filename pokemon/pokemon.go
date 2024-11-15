@@ -16,10 +16,10 @@ import (
 type PokemonProfile struct {
 	CacheControl string `header:"Cache-Control"`
 	ETag         string `header:"ETag"`
-	Id           int8   `json:"id"`
+	Id           int16   `json:"id"`
 	Name         string `json:"name"`
-	Weight       int8   `json:"weight"`
-	Height       int8   `json:"height"`
+	Weight       int16   `json:"weight"`
+	Height       int16   `json:"height"`
 	Abilities    []struct {
 		Ability struct {
 			Name string `json:"name"`
