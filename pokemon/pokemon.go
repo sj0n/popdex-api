@@ -13,6 +13,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+const CACHE_HEADER = "public, max-age=3600, must-revalidate"
+
 type PokemonProfile struct {
 	CacheControl string `header:"Cache-Control"`
 	ETag         string `header:"ETag"`
@@ -66,7 +68,7 @@ func GetPokemonProfile(ctx context.Context, name string) (*PokemonProfile, error
 	var data PokemonProfile
 	json.NewDecoder(resp.Body).Decode(&data)
 
-	data.CacheControl = "public, max-age=604800, must-revalidate"
+	data.CacheControl = CACHE_HEADER
 	data.ETag = pokemon.GenerateEtag(data)
 	return &data, nil
 }
@@ -145,7 +147,7 @@ func GetPokemonMoves(ctx context.Context, name string) (*GroupByVersion, error) 
 		}
 	}
 
-	return &GroupByVersion{Versions: groupedByVersion, CacheControl: "public, max-age=604800, must-revalidate", ETag: pokemon.GenerateEtag(groupedByVersion)}, nil
+	return &GroupByVersion{Versions: groupedByVersion, CacheControl: CACHE_HEADER, ETag: pokemon.GenerateEtag(groupedByVersion)}, nil
 }
 
 type EncounterDetails struct {
@@ -270,5 +272,5 @@ func GetPokemonLocations(ctx context.Context, name string) (*PokemonLocations, e
 		}
 	}
 
-	return &PokemonLocations{Versions: result, CacheControl: "public, max-age=604800, must-revalidate", ETag: pokemon.GenerateEtag(result)}, nil
+	return &PokemonLocations{Versions: result, CacheControl: CACHE_HEADER, ETag: pokemon.GenerateEtag(result)}, nil
 }
