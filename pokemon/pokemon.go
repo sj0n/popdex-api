@@ -14,6 +14,7 @@ import (
 )
 
 const CACHE_HEADER = "public, max-age=3600, must-revalidate"
+var titleFormatter = cases.Title(language.English)
 
 type PokemonProfile struct {
 	CacheControl string `header:"Cache-Control"`
@@ -46,7 +47,7 @@ func GetPokemonProfile(ctx context.Context, name string) (*PokemonProfile, error
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode >= 400 {
 		switch resp.StatusCode {
 		case 404:
 			return nil, &errs.Error{
@@ -113,7 +114,7 @@ func GetPokemonMoves(ctx context.Context, name string) (*GroupByVersion, error) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode >= 400 {
 		switch resp.StatusCode {
 		case 404:
 			return nil, &errs.Error{
@@ -139,8 +140,11 @@ func GetPokemonMoves(ctx context.Context, name string) (*GroupByVersion, error) 
 
 	for i := 0; i < len(data.Moves); i++ {
 		for j := 0; j < len(data.Moves[i].GameVersionDetails); j++ {
+			moveTitleCase := titleFormatter.String(data.Moves[i].Move.Name)
+			moveTitleCase = strings.Join(strings.Split(moveTitleCase, "-"), " ")
+
 			groupedByVersion[data.Moves[i].GameVersionDetails[j].GameVersion.Name] = append(groupedByVersion[data.Moves[i].GameVersionDetails[j].GameVersion.Name], FormattedMoves{
-				Name:        data.Moves[i].Move.Name,
+				Name:        moveTitleCase,
 				Level:       data.Moves[i].GameVersionDetails[j].LevelLearnedAt,
 				LearnMethod: data.Moves[i].GameVersionDetails[j].MoveLearnMethod.Name,
 			})
@@ -228,7 +232,6 @@ func GetPokemonLocations(ctx context.Context, name string) (*PokemonLocations, e
 	for _, loc := range locations {
 		for _, vDetail := range loc.VersionDetails {
 			for _, encounter := range vDetail.EncounterDetails {
-				titleFormatter := cases.Title(language.English)
 				titledCase := titleFormatter.String(loc.LocationArea.Name)
 				titledCase = strings.Join(strings.Split(titledCase, "-"), " ")
 
