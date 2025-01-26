@@ -12,4 +12,4 @@ FROM alpine:latest
 RUN apk update && apk add ca-certificates
 
 COPY --from=builder /run-app /usr/local/bin/
-CMD ["run-app"]
+CMD ["/usr/local/bin/run-app"]
