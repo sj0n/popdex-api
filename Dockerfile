@@ -1,17 +1,16 @@
 ARG GO_VERSION=1
-FROM golang:${GO_VERSION}-bookworm AS builder
+FROM alpine:latest AS builder
 
+RUN apk add --no-cache --update go gcc g++
 WORKDIR /usr/src/app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN go build -v -o /run-app .
+RUN CGO_ENABLED=1 go build -o /echo-api .
 
 FROM alpine:latest
 
 RUN apk update && apk add ca-certificates
+COPY --from=builder /echo-api /usr/local/bin/echo-api
 
-COPY --from=builder /run-app /usr/local/bin/
-RUN chmod +x /usr/local/bin/run-app
-
-CMD ["/usr/local/bin/run-app"]
+CMD ["echo-api"]
