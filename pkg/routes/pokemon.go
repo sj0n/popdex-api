@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"math"
 	"net/http"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+var cache_control = "max-age=3600, must-revalidate"
 var titleFormatter = cases.Title(language.English)
 
 type PokemonProfile struct {
@@ -73,7 +73,7 @@ func GetPokemonProfile(c echo.Context) error {
 	}
 
 	c.Response().Header().Set("etag", resp.Header.Get("Etag"))
-	fmt.Println("Route triggered")
+	c.Response().Header().Set("cache-control", cache_control)
 	return c.JSON(http.StatusOK, result)
 }
 
@@ -158,6 +158,7 @@ func GetPokemonMoves(c echo.Context) error {
 	}
 
 	c.Response().Header().Set("etag", resp.Header.Get("Etag"))
+	c.Response().Header().Set("cache-control", cache_control)
 	return c.JSON(http.StatusOK, &GroupByVersion{Versions: groupedByVersion})
 }
 
@@ -286,5 +287,6 @@ func GetPokemonLocations(c echo.Context) error {
 	}
 
 	c.Response().Header().Set("etag", resp.Header.Get("Etag"))
+	c.Response().Header().Set("cache-control", cache_control)
 	return c.JSON(http.StatusOK, &PokemonLocations{Versions: result})
 }
