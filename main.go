@@ -10,8 +10,11 @@ import (
 func main() {
 	server := echo.New()
 
+	server.Use(middleware.Logger())
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost", "https://popdex.pages.dev", "https://popdex.harizdan.xyz"},
+		AllowOrigins:     []string{"http://localhost:3000", "https://popdex.harizdan.xyz", "popdex.pages.dev"},
+		AllowMethods:     []string{"GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "cache-control", "if-none-match"},
 	}))
 
 	server.GET("/pokemon/:name", routes.GetPokemonProfile)
